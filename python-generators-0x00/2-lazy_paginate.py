@@ -2,8 +2,7 @@ import mysql.connector
 
 def paginate_users(page_size, offset):
     """
-    Fetches users from the database starting at the given offset.
-    Returns a list of users up to the page_size.
+    Fetch a page of users using SELECT * and pagination.
     """
     connection = mysql.connector.connect(
         host='localhost',
@@ -12,23 +11,22 @@ def paginate_users(page_size, offset):
         database='ALX_prodev'
     )
     cursor = connection.cursor()
-    query = "SELECT user_id, name, email, age FROM user_data LIMIT %s OFFSET %s"
+    # Using the exact required string
+    query = "SELECT * FROM user_data LIMIT %s OFFSET %s"
     cursor.execute(query, (page_size, offset))
     results = cursor.fetchall()
     cursor.close()
     connection.close()
     return results
 
-
 def lazy_paginate(page_size):
     """
-    Generator that lazily fetches and yields user data in pages.
-    Only fetches the next page when needed.
+    Generator that yields user data pages lazily.
     """
     offset = 0
-    while True:  # one loop only
+    while True:
         page = paginate_users(page_size, offset)
         if not page:
             break
-        yield page  # yield generator used here
+        yield page
         offset += page_size
