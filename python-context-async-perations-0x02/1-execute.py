@@ -14,13 +14,25 @@ class ExecuteQuery:
         self.cursor = self.conn.cursor()
         self.cursor.execute(self.query, self.params)
         self.result = self.cursor.fetchall()
-        return self.result
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.conn:
-            if exc_type is not None:
+            if exc_type:
                 self.conn.rollback()
             else:
                 self.conn.commit()
             self.cursor.close()
             self.conn.close()
+
+# Run the query manually without 'with'
+query = "SELECT * FROM users WHERE age > ?"
+params = (25,)
+
+context = ExecuteQuery('example.db', query, params)
+context.__enter__()
+results = context.result
+context.__exit__(None, None, None)
+
+for row in results:
+    print(row)
