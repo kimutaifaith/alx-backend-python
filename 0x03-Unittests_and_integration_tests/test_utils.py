@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-Unit tests for the access_nested_map function in the utils module.
+Unit tests for the access_nested_map, get_json, and memoize functions in utils module.
 """
 
 import unittest
+from unittest.mock import patch, Mock
 from parameterized import parameterized
-from utils import access_nested_map
+from utils import access_nested_map, get_json, memoize
 
 
 class TestAccessNestedMap(unittest.TestCase):
@@ -38,6 +39,7 @@ class TestAccessNestedMap(unittest.TestCase):
             access_nested_map(nested_map, path)
         self.assertEqual(str(cm.exception), f"'{expected_message}'")
 
+
 class TestGetJson(unittest.TestCase):
     """
     Test suite for the get_json function.
@@ -56,6 +58,8 @@ class TestGetJson(unittest.TestCase):
             result = get_json(test_url)
             mock_get.assert_called_once_with(test_url)
             self.assertEqual(result, test_payload)
+
+
 class TestMemoize(unittest.TestCase):
     """
     Test suite for the memoize decorator.
@@ -79,5 +83,7 @@ class TestMemoize(unittest.TestCase):
             self.assertEqual(result1, 42)
             self.assertEqual(result2, 42)
             mock_method.assert_called_once()
-            if __name__ == '__main__':
+
+
+if __name__ == '__main__':
     unittest.main()
