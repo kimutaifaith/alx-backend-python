@@ -32,4 +32,63 @@ class TestGithubOrgClient(unittest.TestCase):
 
     def test_public_repos_url(self) -> None:
         """
-        Test that _public_repos_url returns the_
+        Test that _public_repos_url returns the correct repos_url from the org.
+        """
+        fake_payload = {"repos_url": "https://api.github.com/orgs/test_org/repos"}
+        client = GithubOrgClient("test_org")
+
+        with patch.object(
+            GithubOrgClient,
+            "org",
+            new_callable=PropertyMock,
+            return_value=fake_payload
+        ):
+            url = client._public_repos_url
+            self.assertEqual(url, fake_payload["repos_url"])
+
+    @patch("client.get_json")
+    def test_public_repos(self, mock_get_json) -> None:
+        """
+        Test that GithubOrgClient.public_repos returns expected list of repo
+        names.
+        """
+        repos_payload = [
+            {"name": "repo1"},
+            {"name": "repo2"},
+            {"name": "repo3"}
+        ]
+        mock_get_json.return_value = repos_payload
+
+        client = GithubOrgClient("test_org")
+
+        with patch.object(
+            GithubOrgClient,
+            "_public_repos_url",
+            new_callable=PropertyMock,
+            return_value="https://api.github.com/orgs/test_org/repos"
+        ) as mock_public_repos_url:
+
+            repos = client.public_repos
+            expected_repos = [repo["name"] for repo in repos_payload]
+
+            self.assertEqual(repos, expected_repos)
+            mock_public_repos_url.assert_called_once()
+            mock_get_json.assert_called_once_with(
+                "https://api.github.com/orgs/test_org/repos"
+            )
+
+    @parameterized.expand([
+        ({"license": {"key": "my_license"}}, "my_license", True),
+        ({"license": {"key": "other_license"}}, "my_license", False),
+    ])
+    def test_has_license(self, repo, license_key, expected) -> None:
+        """
+        Test GithubOrgClient.has_license returns correct boolean based on
+        repo license key matching the given license_key.
+        """
+        result = GithubOrgClient.has_license(repo, license_key)
+        self.assertEqual(result, expected)
+
+
+if __name__ == "__main__":
+    unittest.main()
