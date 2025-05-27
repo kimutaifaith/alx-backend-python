@@ -8,7 +8,7 @@ from unittest.mock import patch
 from parameterized import parameterized_class
 import requests
 from client import GithubOrgClient
-import fixtures  # Assuming fixtures.py is available with required data
+import fixtures  
 
 
 @parameterized_class([
