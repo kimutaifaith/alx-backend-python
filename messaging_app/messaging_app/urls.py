@@ -20,4 +20,6 @@ from django.urls import path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('chats.urls')),
+    # DRF's login/logout views for the browsable API
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]
