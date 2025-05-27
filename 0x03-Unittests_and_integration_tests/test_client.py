@@ -48,11 +48,13 @@ class TestGithubOrgClient(unittest.TestCase):
             self.assertEqual(url, fake_payload["repos_url"])
 
         @patch("client.get_json")
+        
+     @patch("client.get_json")
     def test_public_repos(self, mock_get_json):
         """
-        Test that GithubOrgClient.public_repos returns expected list of repo names.
+        Test that GithubOrgClient.public_repos returns expected list of repo
+        names.
         """
-        # Mocked payload returned by get_json
         repos_payload = [
             {"name": "repo1"},
             {"name": "repo2"},
@@ -72,13 +74,8 @@ class TestGithubOrgClient(unittest.TestCase):
             repos = client.public_repos
             expected_repos = [repo["name"] for repo in repos_payload]
 
-            # Check the returned list matches expected repo names
             self.assertEqual(repos, expected_repos)
-
-            # Check _public_repos_url property was accessed once
             mock_public_repos_url.assert_called_once()
-
-            # Check get_json was called once with the mocked URL
             mock_get_json.assert_called_once_with(
                 "https://api.github.com/orgs/test_org/repos"
             )
