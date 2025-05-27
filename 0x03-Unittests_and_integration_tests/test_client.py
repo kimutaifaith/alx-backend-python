@@ -19,6 +19,7 @@ class TestGithubOrgClient(unittest.TestCase):
         ("abc",)
     ])
     @patch("client.get_json", autospec=True)
+    
     def test_org(self, org_name: str, mock_get_json) -> None:
         """
         Test that GithubOrgClient.org returns the correct value and calls
@@ -47,7 +48,7 @@ class TestGithubOrgClient(unittest.TestCase):
             self.assertEqual(url, fake_payload["repos_url"])
 
         @patch("client.get_json")
-     def test_public_repos(self, mock_get_json):
+    def test_public_repos(self, mock_get_json):
         """
         Test that GithubOrgClient.public_repos returns expected list of repo names.
         """
