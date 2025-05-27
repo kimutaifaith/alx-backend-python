@@ -9,7 +9,14 @@ from parameterized import parameterized, parameterized_class
 from client import GithubOrgClient
 import requests
 import fixtures  # assuming this contains org_payload, repos_payload, expected_repos, apache2_repos
-
+@parameterized_class([
+    {
+        "org_payload": fixtures.org_payload,
+        "repos_payload": fixtures.repos_payload,
+        "expected_repos": fixtures.expected_repos,
+        "apache2_repos": fixtures.apache2_repos,
+    }
+])
 
 class TestGithubOrgClient(unittest.TestCase):
     """
