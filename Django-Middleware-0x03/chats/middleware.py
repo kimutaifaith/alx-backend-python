@@ -40,7 +40,23 @@ class OffensiveLanguageMiddleware:
                 return HttpResponseForbidden("Rate limit exceeded: Max 5 messages per minute per IP.")
 
         return self.get_response(request)
+class RolePermissionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
 
+    def __call__(self, request):
+        # Example: Only restrict actions under /api/conversations/ and /api/messages/
+        protected_paths = ['/api/conversations/', '/api/messages/']
+
+        if any(request.path.startswith(path) for path in protected_paths):
+            if request.user.is_authenticated:
+                user_role = getattr(request.user, 'role', None)
+                if user_role not in ['admin', 'moderator']:
+                    return HttpResponseForbidden("Access denied: insufficient role permissions.")
+            else:
+                return HttpResponseForbidden("Authentication required.")
+
+        return self.get_response(request)
     def get_client_ip(self, request):
         """Handles getting client IP even behind a proxy."""
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
