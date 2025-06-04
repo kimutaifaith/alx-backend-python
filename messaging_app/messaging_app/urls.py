@@ -22,4 +22,6 @@ urlpatterns = [
     path('api/', include('chats.urls')),
     # DRF's login/logout views for the browsable API
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # login
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
