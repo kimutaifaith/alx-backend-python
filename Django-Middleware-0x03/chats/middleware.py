@@ -40,6 +40,7 @@ class OffensiveLanguageMiddleware:
                 return HttpResponseForbidden("Rate limit exceeded: Max 5 messages per minute per IP.")
 
         return self.get_response(request)
+        
 class RolePermissionMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
