@@ -6,7 +6,8 @@ from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsOwnerOrReadOnly, IsParticipantOfConversation
-
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import MessageFilter
 
 
 from .models import Conversation, Message, CustomUser
@@ -45,7 +46,8 @@ class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
-
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = MessageFilter
     
         
     def get_queryset(self):
