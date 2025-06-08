@@ -1,6 +1,4 @@
-# chats/middleware.py
-
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 from django.http import HttpResponseForbidden
 
 class RestrictAccessByTimeMiddleware:
@@ -17,20 +15,18 @@ class RestrictAccessByTimeMiddleware:
 
         return self.get_response(request)
 
+
 class OffensiveLanguageMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        # Track IPs and their message timestamps
         self.message_log = {}
 
     def __call__(self, request):
-        # Only apply to POST requests to the messages endpoint
         if request.method == 'POST' and '/messages' in request.path:
             ip = self.get_client_ip(request)
             now = datetime.now()
             window_start = now - timedelta(minutes=1)
 
-            # Initialize or clean up old timestamps
             timestamps = self.message_log.get(ip, [])
             timestamps = [ts for ts in timestamps if ts > window_start]
             timestamps.append(now)
@@ -40,13 +36,19 @@ class OffensiveLanguageMiddleware:
                 return HttpResponseForbidden("Rate limit exceeded: Max 5 messages per minute per IP.")
 
         return self.get_response(request)
-        
+
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            return x_forwarded_for.split(',')[0]
+        return request.META.get('REMOTE_ADDR')
+
+
 class RolepermissionMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        # Example: Only restrict actions under /api/conversations/ and /api/messages/
         protected_paths = ['/api/conversations/', '/api/messages/']
 
         if any(request.path.startswith(path) for path in protected_paths):
@@ -58,9 +60,17 @@ class RolepermissionMiddleware:
                 return HttpResponseForbidden("Authentication required.")
 
         return self.get_response(request)
-    def get_client_ip(self, request):
-        """Handles getting client IP even behind a proxy."""
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            return x_forwarded_for.split(',')[0]
-        return request.META.get('REMOTE_ADDR')
+
+
+class RequestLoggingMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        method = request.method
+        path = request.get_full_path()
+        user = request.user if request.user.is_authenticated else "Anonymous"
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        print(f"[{timestamp}] {method} request to {path} by {user}")
+        return self.get_response(request)
