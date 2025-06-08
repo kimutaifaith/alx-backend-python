@@ -1,9 +1,9 @@
 # chats/views.py
-
+from rest_framework import viewsets
 from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .permissions import IsOwnerOrReadOnly
+from .permissions import IsOwnerOrReadOnly, IsParticipantOfConversation
 
 
 
@@ -13,7 +13,7 @@ from .serializers import ConversationSerializer, MessageSerializer
 class ConversationViewSet(viewsets.ModelViewSet):
     queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly, IsParticipantOfConversation]
 
     def create(self, request, *args, **kwargs):
         user_ids = request.data.get('participants', [])
