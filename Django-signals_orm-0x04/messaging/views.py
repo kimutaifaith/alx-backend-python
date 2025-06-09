@@ -1,6 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.contrib.auth.models import User
+from .models import Message
+from django.shortcuts import render
 
 @login_required
 def delete_user(request):
@@ -29,10 +31,6 @@ def get_message_thread(message):
 
     return fetch_replies(message)
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from .models import Message
-from django.contrib.auth.models import User
 
 @login_required
 def inbox(request):
@@ -68,3 +66,8 @@ def send_message(request):
         return render(request, 'messaging/send.html', {'success': 'Message sent!'})
 
     return render(request, 'messaging/send.html')
+
+@login_required
+def unread_inbox(request):
+    unread_messages = Message.unread.for_user(request.user).select_related('sender')
+    return render(request, 'messaging/unread_inbox.html', {'messages': unread_messages})
