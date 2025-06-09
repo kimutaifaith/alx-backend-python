@@ -4,6 +4,12 @@ from django.contrib.auth.models import User
 from .models import Message
 from django.shortcuts import render
 from .serializers import MessageSerializer
+from rest_framework.views import APIView
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
 
 class UnreadMessagesView(APIView):
     permission_classes = [IsAuthenticated]
@@ -84,3 +90,10 @@ def send_message(request):
 def unread_inbox(request):
     unread_messages = Message.unread.for_user(request.user).select_related('sender')
     return render(request, 'messaging/unread_inbox.html', {'messages': unread_messages})
+
+@method_decorator(cache_page(60), name='dispatch')  # Cache for 60 seconds
+class MessageListView(APIView):
+    def get(self, request, conversation_id):
+        messages = Message.objects.filter(conversation_id=conversation_id).order_by('timestamp')
+        serializer = MessageSerializer(messages, many=True)
+        return Response(serializer.data)
