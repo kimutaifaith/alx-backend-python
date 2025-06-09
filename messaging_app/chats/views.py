@@ -8,7 +8,9 @@ from rest_framework.permissions import IsAuthenticated
 from .permissions import IsOwnerOrReadOnly, IsParticipantOfConversation
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import MessageFilter
-
+from rest_framework.views import APIView
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 
 from .models import Conversation, Message, CustomUser
 from .serializers import ConversationSerializer, MessageSerializer
@@ -58,3 +60,10 @@ class MessageViewSet(viewsets.ModelViewSet):
         if self.request.user not in conversation.participants.all():
             raise PermissionDenied("HTTP_403_FORBIDDEN: You are not a participant in this conversation.")
         serializer.save(sender=self.request.user)
+
+@method_decorator(cache_page(60), name='dispatch')  # Cache for 60 seconds
+class MessageListView(APIView):
+    def get(self, request, conversation_id):
+        messages = Message.objects.filter(conversation_id=conversation_id).order_by('timestamp')
+        serializer = MessageSerializer(messages, many=True)
+        return Response(serializer.data)
