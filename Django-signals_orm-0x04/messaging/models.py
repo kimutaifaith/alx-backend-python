@@ -22,6 +22,7 @@ class Notification(models.Model):
 
     def __str__(self):
         return f'Notification for {self.user} about message {self.message.id}'
+
 class MessageHistory(models.Model):
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='histories')
     old_content = models.TextField()
@@ -31,3 +32,4 @@ class MessageHistory(models.Model):
     def __str__(self):
         msg_id = self.message.id if self.message and self.message.id else "unsaved"
         return f"History for Msg ID {msg_id} at {self.edited_at}"
+
