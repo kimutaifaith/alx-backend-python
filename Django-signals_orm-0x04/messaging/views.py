@@ -3,7 +3,20 @@ from django.shortcuts import redirect
 from django.contrib.auth.models import User
 from .models import Message
 from django.shortcuts import render
+from .serializers import MessageSerializer
 
+class UnreadMessagesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Get unread messages using the custom manager method
+        unread_messages_qs = Message.unread.unread_for_user(request.user)
+
+        # Further optimize by specifying only necessary fields in the view (optional)
+        unread_messages_qs = unread_messages_qs.only('id', 'sender', 'content', 'timestamp')
+
+        serializer = MessageSerializer(unread_messages_qs, many=True)
+        return Response(serializer.data)
 @login_required
 def delete_user(request):
     if request.method == "POST":
